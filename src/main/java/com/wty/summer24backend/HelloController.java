@@ -1,9 +1,11 @@
 package com.wty.summer24backend;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import com.wty.summer24backend.entity.User;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
 
 @RestController
 public class HelloController {
@@ -14,8 +16,42 @@ public class HelloController {
         return "GET请求";
     }
 
-    @GetMapping("/hello")
+    @GetMapping("/hello/*")
     public String hello() {
         return "Hello World";
+    }
+
+    @PostMapping(value = "/postTest")
+    public String postTest(User user) {
+        System.out.println(user);
+        return "POST请求";
+    }
+
+    @PostMapping(value = "/postTest2")
+    public String postTest2(@RequestBody User user) {
+        System.out.println(user);
+        return "POST请求2";
+    }
+
+    @RequestMapping(value = "/fileTest", method = RequestMethod.POST)
+    public static boolean createOrUpdateMultipartFile(String folderPath, MultipartFile multipartFile) {
+        if (null == multipartFile) {
+            return false;
+        }
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            if (!folder.mkdirs()) {
+                return false;
+            }
+        }
+        System.out.println("received file: " + multipartFile.getOriginalFilename());
+        File file = new File(folder.getAbsolutePath() + File.separator + multipartFile.getOriginalFilename());
+        try {
+            multipartFile.transferTo(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 }
