@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserRoleService extends IService<UserRole> {
-    void addUserRole(Long userId, List<Integer> roleIdList, boolean deleteOldRole);
+    void addUserRole(Long userId, List<Integer> roleIdList);
 
     void batchAddUserRole(List<Map<String, Object>> userRoleList);
 

@@ -8,15 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserService extends IService<User> {
-    List<Map<String, Object>> getUserRoleAndPermissionByUserId(List<Long> userId);
-
-    Page<User> getUserList(String userName, String minCreateTime, String maxCreateTime, String orderBy,
-                           String orderMethod, Integer page, Integer pageSize);
-
-    User addOneUser(User user) throws RuntimeException;
-
-    Map<String, Object> batchCreateUser(List<User> users);
-
+    /**
+     * 判断用户名是否存在
+     * @param userName  用户名
+     */
     boolean existsByUserName(String userName, boolean throwExceptWhenExist) throws RuntimeException;
 
     Map<String, Boolean> batchCheckUserName(List<String> userNames);

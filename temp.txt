@@ -1,0 +1,19 @@
+org.springframework.beans.factory.UnsatisfiedDependencyException:
+ Error creating bean with name 'permission' defined in file [C:\Users\daerh\Desktop\summer24backend\target\classes\com\wty\summer24backend\controller\Permission.class]:
+ Unsatisfied dependency expressed through constructor parameter 0;
+ nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException:
+ Error creating bean with name 'permissionServiceImpl':
+  Unsatisfied dependency expressed through field 'baseMapper';
+  nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException:
+   Error creating bean with name 'permissionMapper' defined in file
+   [C:\Users\daerh\Desktop\summer24backend\target\classes\com\wty\summer24backend\mapper\PermissionMapper.class]:
+   Unsatisfied dependency expressed through bean property 'sqlSessionFactory';
+   nested exception is org.springframework.beans.factory.BeanCreationException:
+   Error creating bean with name 'sqlSessionFactory' defined in class path resource
+   [com/baomidou/mybatisplus/autoconfigure/MybatisPlusAutoConfiguration.class]:
+   Bean instantiation via factory method failed;
+   nested exception is org.springframework.beans.BeanInstantiationException:
+   Failed to instantiate [org.apache.ibatis.session.SqlSessionFactory]:
+    Factory method 'sqlSessionFactory' threw exception; nested exception
+    is com.baomidou.mybatisplus.core.exceptions.MybatisPlusException:
+    Error: GlobalConfigUtils setMetaData Fail !  Cause:com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
