@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -18,6 +19,12 @@ public class Role implements Serializable {
     private Integer id;
     private String name;
     private String description;
-    private Data createTime;
+    private Date createTime;
     private Integer status;
+    private Date updateTime;
+
+    public static class Status {
+        public static final Integer DELETED = 0;
+        public static final Integer ENABLE = 1;
+    }
 }

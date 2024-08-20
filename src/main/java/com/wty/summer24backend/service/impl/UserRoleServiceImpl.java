@@ -84,7 +84,10 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
     }
 
     @Override
-    public List<Map<String, Object>> getUserIdsByRoleIds(List<Integer> roleIdList) {
-        return Collections.emptyList();
+    public List<Map<String, Object>> getUserIdsByRoleIds(List<Integer> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return userRoleMapper.getUserIdsByRoleIds(roleIds);
     }
 }

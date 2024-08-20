@@ -1,12 +1,13 @@
-package com.wty.summer24backend.VO;
+package com.wty.summer24backend.common.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.wty.summer24backend.common.enums.CommonStatusEnum;
 import com.wty.summer24backend.common.interfaces.IStatusCode;
+import com.wty.summer24backend.common.enums.CommonStatusEnum;
 import lombok.Getter;
 
 @Getter
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
+@SuppressWarnings("unused")
 public class ResponseVO<T> {
 
     private final Integer status;
@@ -51,6 +52,7 @@ public class ResponseVO<T> {
      * @param data 数据
      */
     public static <T> ResponseVO<T> success(T data) {
+
         return new ResponseVO<>(CommonStatusEnum.SUCCESS, data);
     }
 
@@ -86,7 +88,7 @@ public class ResponseVO<T> {
      * 构建成功返回对象
      *
      * @param statusCode 状态码枚举
-     * @param data 数据
+     * @param data       数据
      */
     public static <T> ResponseVO<T> success(IStatusCode statusCode, T data) {
         return new ResponseVO<>(statusCode, data);
@@ -128,4 +130,3 @@ public class ResponseVO<T> {
     }
 
 }
-

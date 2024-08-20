@@ -13,8 +13,4 @@ import java.util.List;
 @Service
 public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permission> implements PermissionService {
 
-    @Override
-    public List<com.wty.summer24backend.controller.Permission> list(QueryWrapper<com.wty.summer24backend.controller.Permission> permissionQueryWrapper) {
-        return Collections.emptyList();
-    }
 }
