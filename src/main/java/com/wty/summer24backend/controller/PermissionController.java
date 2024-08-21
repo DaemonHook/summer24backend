@@ -1,9 +1,9 @@
 package com.wty.summer24backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.wty.summer24backend.VO.ResponseVO;
 import com.wty.summer24backend.service.PermissionService;
 import com.wty.summer24backend.entity.Permission;
+import com.wty.summer24backend.common.vo.ResponseVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

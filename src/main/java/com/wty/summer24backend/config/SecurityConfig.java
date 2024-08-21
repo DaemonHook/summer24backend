@@ -1,12 +1,15 @@
-package com.wty.summer24backend.util;
+package com.wty.summer24backend.config;
 
 import com.wty.summer24backend.common.enums.CommonStatusEnum;
-import com.wty.summer24backend.config.DevConfig;
+import com.wty.summer24backend.common.enums.HeaderEnum;
 import com.wty.summer24backend.pojo.TokenData;
+import com.wty.summer24backend.util.TokenUtils;
 import lombok.NonNull;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -24,42 +27,37 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Spring Security工具类
- */
-public class SecurityUtils {
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    public static void setDefaultHttpSecurity(HttpSecurity http, String... permitUrls) throws Exception {
-
-        // 禁用csrf
-        http.csrf().disable();
-        // 禁用cors
-        http.cors().disable();
-
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
         if (DevConfig.ENABLE_SECURITY) {
-            http.authorizeRequests()
+            http
+                    .authorizeRequests()
                     .antMatchers("/swagger-ui.html/**",
                             "/webjars/**",
                             "/swagger-resources/**",
-                            "/v2/**",
                             "/doc.html").permitAll()
-                    .antMatchers(permitUrls).permitAll()
-                    //其他任何请求需要验证权限
-                    .anyRequest().authenticated()
+                    .antMatchers("/auth/login",
+                            "/auth/register").permitAll() // 允许访问登录和注册页面
+                    .anyRequest().authenticated() // 其他请求需要认证
                     .and().exceptionHandling()
-                    .authenticationEntryPoint((request, response, authenticationException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, CommonStatusEnum.UNAUTHORIZED.getMessage()))
-                    .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN, CommonStatusEnum.FORBIDDEN.getMessage()));
+                    .authenticationEntryPoint((request, response, authenticationException) ->
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, CommonStatusEnum.UNAUTHORIZED.getMessage()))
+                    .accessDeniedHandler((request, response, accessDeniedException) ->
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, CommonStatusEnum.FORBIDDEN.getMessage()));
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }
-        // 添加过滤器
         http.addFilterBefore(new LoginFilter(), UsernamePasswordAuthenticationFilter.class);
     }
+
 
     private static class LoginFilter extends OncePerRequestFilter {
         @Override
         protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-            TokenData user = ServletUtils.getUserInfo(request);
+            TokenData user = getUserInfo(request);
             if (user != null) {
                 // 已登录，创建认证对象
                 List<SimpleGrantedAuthority> authorities = Arrays.stream(user.permission.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
@@ -91,5 +89,13 @@ public class SecurityUtils {
         return false;
     }
 
+    /**
+     * 获取请求头中的用户信息
+     *
+     * @param request 请求对象
+     * @return 用户信息
+     */
+    public static TokenData getUserInfo(HttpServletRequest request) {
+        return TokenUtils.getAllInfoFromToken(request.getHeader(HeaderEnum.AUTHORIZATION.getValue()));
+    }
 }
-

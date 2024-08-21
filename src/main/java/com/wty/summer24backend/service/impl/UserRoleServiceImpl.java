@@ -26,15 +26,17 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
     }
 
     @Override
-    public void addUserRole(Long userId, List<Integer> roleIdList) {
-        if (roleIdList == null || roleIdList.isEmpty()) {
+    public void addUserRole(Long userId, List<Integer> roleIdList, boolean deleteOldRole) {
+        if (deleteOldRole) {
+            removeByMap(new HashMap<String, Object>() {{
+                put("user_id", userId);
+            }});
+        }
+        if (roleIdList == null || roleIdList.size() == 0) {
             return;
         }
-
         List<Role> roleList = roleMapper.selectBatchIds(roleIdList);
-        Set<Integer> roleIdSet = roleList
-                .stream()
-                .collect(HashSet::new, (set, role) -> set.add(role.getId()), HashSet::addAll);
+        Set<Integer> roleIdSet = roleList.stream().collect(HashSet::new, (set, role) -> set.add(role.getId()), HashSet::addAll);
         if (roleIdList.stream().anyMatch(roleId -> !roleIdSet.contains(roleId))) {
             throw new IllegalArgumentException("roleIdList中包含无效的roleId");
         }
@@ -45,20 +47,16 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
             userRole.setUserId(userId).setRoleId(roleId).setCreateTime(date);
             userRoleList.add(userRole);
         }
-        saveBatch(userRoleList);
+        saveBatch(userRoleList, userRoleList.size());
     }
 
     @Override
     public void batchAddUserRole(List<Map<String, Object>> userRoleList) {
-        if (userRoleList == null || userRoleList.isEmpty()) {
+        if (userRoleList == null || userRoleList.size() == 0) {
             return;
         }
-        List<Role> allRoleList = roleMapper.selectList(new QueryWrapper<Role>());
-        Set<Integer> allRoleIdSet = allRoleList.stream().map(Role::getId).collect(Collectors.toSet());
-        Set<Integer> allRoleSet = allRoleList.stream().collect(
-                HashSet::new,
-                (set, role) -> set.add(role.getId()),
-                HashSet::addAll);
+        List<Role> allRoleList = roleMapper.selectList(new QueryWrapper<>());
+        Set<Integer> allRoleIdSet = allRoleList.stream().collect(HashSet::new, (set, role) -> set.add(role.getId()), HashSet::addAll);
         List<UserRole> userRoleToSaveList = new ArrayList<>();
         Date date = new Date();
         for (Map<String, Object> userRole : userRoleList) {
@@ -69,9 +67,10 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
             @SuppressWarnings("unchecked")
             List<Integer> roleIdList = (List<Integer>) userRole.get("roleIdList");
             if (roleIdList != null) {
+                // 筛选出有效的roleId
                 roleIdList = roleIdList.stream().filter(allRoleIdSet::contains).collect(Collectors.toList());
             }
-            if (roleIdList == null || roleIdList.isEmpty()) {
+            if (roleIdList == null || roleIdList.size() == 0) {
                 continue;
             }
             for (Integer roleId : roleIdList) {
@@ -80,7 +79,7 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
                 userRoleToSaveList.add(userRoleToSave);
             }
         }
-        saveBatch(userRoleToSaveList);
+        saveBatch(userRoleToSaveList, userRoleToSaveList.size());
     }
 
     @Override
@@ -90,4 +89,5 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
         }
         return userRoleMapper.getUserIdsByRoleIds(roleIds);
     }
+
 }

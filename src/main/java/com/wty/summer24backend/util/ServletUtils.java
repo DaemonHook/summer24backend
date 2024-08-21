@@ -1,7 +1,8 @@
 package com.wty.summer24backend.util;
 
 
-import com.wty.summer24backend.common.pojo.TokenData;
+import com.wty.summer24backend.common.enums.HeaderEnum;
+import com.wty.summer24backend.pojo.TokenData;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -45,11 +46,7 @@ public class ServletUtils {
      * @return 用户信息
      */
     public static TokenData getUserInfo(HttpServletRequest request) {
-        if (DevConfig.ENABLE_GATEWAY) {
-            return TokenData.fromJSONString(request.getHeader(HeaderEnum.LOGIN_USER.getValue()));
-        } else {
-            return TokenUtils.getAllInfoFromToken(request.getHeader(HeaderEnum.AUTHORIZATION.getValue()));
-        }
+        return TokenUtils.getAllInfoFromToken(request.getHeader(HeaderEnum.AUTHORIZATION.getValue()));
     }
 
     /**
@@ -90,13 +87,8 @@ public class ServletUtils {
      * @param permissions 权限
      */
     public static void setTokenData(Long userId, String username, String roles, String permissions) {
-        if (DevConfig.ENABLE_GATEWAY) {
-            TokenData tokenData = new TokenData(userId, username, roles, permissions);
-            getResponse().setHeader(HeaderEnum.TOKEN_DATA.getValue(), tokenData.toJSONString());
-        } else {
-            String token = TokenUtils.sign(new TokenData(userId, username, roles, permissions));
-            getResponse().setHeader(HeaderEnum.AUTHORIZATION.getValue(), token);
-        }
+        String token = TokenUtils.sign(new TokenData(userId, username, roles, permissions));
+        getResponse().setHeader(HeaderEnum.AUTHORIZATION.getValue(), token);
     }
 
     /**
@@ -112,7 +104,7 @@ public class ServletUtils {
      * @param userIds 用户id列表
      */
     public static void updatePermission(List<Long> userIds) {
-        if (userIds != null && userIds.size() > 0) {
+        if (userIds != null && !userIds.isEmpty()) {
             StringBuilder s = new StringBuilder(userIds.get(0) + "");
             for (int i = 1; i < userIds.size(); i++) {
                 s.append(",").append(userIds.get(i));

@@ -1,13 +1,27 @@
 package com.wty.summer24backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.wty.summer24backend.VO.ResponseVO;
+import com.wty.summer24backend.common.constant.PermissionCode;
+import com.wty.summer24backend.common.enums.CommonStatusEnum;
+import com.wty.summer24backend.common.enums.StatusEnum;
+import com.wty.summer24backend.common.enums.StorageEnum;
+import com.wty.summer24backend.common.exceptions.CustomRuntimeException;
+import com.wty.summer24backend.dto.UserDTO;
+import com.wty.summer24backend.entity.User;
 import com.wty.summer24backend.service.UserRoleService;
 import com.wty.summer24backend.service.UserService;
+import com.wty.summer24backend.util.DataUtils;
+import com.wty.summer24backend.util.FileUtils;
+import com.wty.summer24backend.util.ServletUtils;
+import com.wty.summer24backend.dto.UserSelfDTO;
+import com.wty.summer24backend.util.UserUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,7 +56,8 @@ public class UserController {
     @PostMapping("/check-password")
     public ResponseVO<Boolean> checkPassword(@RequestParam @ApiParam(value = "密码", required = true) String password) {
         Long userId = ServletUtils.getUserId();
-        User user = userService.getOne(new QueryWrapper<User>().eq("id", userId).eq("password", password).ne("status", User.Status.DELETED));
+        User user = userService.getOne(new QueryWrapper<User>().eq("id", userId).eq("password", password)
+                .ne("status", User.Status.DELETED));
         return ResponseVO.success(user != null);
     }
 
@@ -57,7 +72,8 @@ public class UserController {
     public ResponseVO<String> updatePassword(@RequestParam @ApiParam(value = "旧密码", required = true) String oldPassword,
                                              @RequestParam @ApiParam(value = "新密码", required = true) String newPassword) {
         Long userId = ServletUtils.getUserId();
-        User user = userService.getOne(new QueryWrapper<User>().eq("id", userId).eq("password", oldPassword).ne("status", User.Status.DELETED));
+        User user = userService.getOne(new QueryWrapper<User>().eq("id", userId)
+                .eq("password", oldPassword).ne("status", User.Status.DELETED));
         if (user == null) {
             return ResponseVO.error(StatusEnum.PASSWORD_ERROR);
         }
@@ -69,23 +85,6 @@ public class UserController {
         ServletUtils.updatePermission(Collections.singletonList(user.getId()));
         ServletUtils.setTokenData(null, null, null, null);
         return ResponseVO.success();
-    }
-
-    /**
-     * 更新用户头像
-     *
-     * @param avatar 头像文件
-     */
-    @ApiOperation(value = "更新用户自己头像", notes = "根据用户id和头像信息进行更改用户头像操作")
-    @PutMapping("/me/avatar")
-    public ResponseVO<String> updateUserAvatar(@RequestPart MultipartFile avatar) {
-        Long userId = ServletUtils.getUserId();
-        User user = userService.getById(userId);
-        if (UserUtils.updateUserAvatar(user, avatar)) {
-            return ResponseVO.success();
-        } else {
-            return ResponseVO.error();
-        }
     }
 
     /**
@@ -106,22 +105,6 @@ public class UserController {
             return ResponseVO.success();
         } else {
             return ResponseVO.error(CommonStatusEnum.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * 获取用户头像
-     */
-    @ApiOperation(value = "获取用户自己的头像")
-    @GetMapping("/me/avatar")
-    public void getAvatar(HttpServletResponse response) {
-        Long userId = ServletUtils.getUserId();
-        User user = userService.getById(userId);
-        String avatarPath = StorageEnum.USER_AVATAR_PATH.getDesc() + user.getAvatarPath();
-        try {
-            FileUtils.writeImageToResponse(avatarPath, response);
-        } catch (IOException ignored) {
-            response.setStatus(CommonStatusEnum.NO_CONTENT.getCode());
         }
     }
 

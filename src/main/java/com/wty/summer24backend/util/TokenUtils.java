@@ -5,7 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.wty.summer24backend.common.pojo.TokenData;
+import com.wty.summer24backend.pojo.TokenData;
 
 import java.util.Date;
 
@@ -66,7 +66,7 @@ public class TokenUtils {
      * @return token中包含的所有信息
      */
     public static TokenData getAllInfoFromToken(String token) {
-        if (token == null || "".equals(token) || !verify(token)) {
+        if (token == null || token.isEmpty() || !verify(token)) {
             return null;
         }
         try {
