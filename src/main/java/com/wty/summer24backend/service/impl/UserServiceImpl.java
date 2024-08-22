@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.xml.crypto.Data;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                                   String orderMethod, Integer page, Integer pageSize) {
         List<User> userList = userMapper.getUserList(userName, minCreateTime, maxCreateTime, orderBy, orderMethod,
                 (page - 1) * pageSize, pageSize);
+        if (userList.isEmpty()) {
+            return null;
+        }
         List<Map<String, Object>> list = userMapper.getUserRoleAndPermissionsByUserId(userList.stream().map(User::getId)
                 .collect(Collectors.toList()));
         Map<Long, Map<String, Object>> map = list.stream().collect(Collectors.toMap(m -> (Long) m.get("userId"), m -> m));
@@ -155,6 +159,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             result.put(name, existUserNameSet.contains(name));
         }
         return result;
+    }
+
+    @Override
+    public List<Long> findUserByName(String userName) {
+        return userMapper.selectList(new QueryWrapper<User>().eq("user_name", userName.trim()).ne("status", User.Status.DELETED))
+                .stream().map(User::getId).collect(Collectors.toList());
     }
 
 }

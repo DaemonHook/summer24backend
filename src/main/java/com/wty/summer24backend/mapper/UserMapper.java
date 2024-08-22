@@ -1,12 +1,10 @@
 package com.wty.summer24backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.wty.summer24backend.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +20,7 @@ public interface UserMapper extends BaseMapper<User> {
             "    GROUP_CONCAT(DISTINCT r.name) AS roleNameList, " +
             "    GROUP_CONCAT(DISTINCT p.id) AS permissionIdList, " +
             "    GROUP_CONCAT(DISTINCT p.name) AS permissionNameList, " +
-            "    GROUP_CONCAT(DISTINCT p.code) AS permissionCodeList," +
+            "    GROUP_CONCAT(DISTINCT p.code) AS permissionCodeList, " +
             "    GROUP_CONCAT(DISTINCT p.platform) AS platformList " +
             "FROM `user` u " +
             "LEFT JOIN `user_role` ur ON u.id = ur.user_id " +
@@ -56,6 +54,7 @@ public interface UserMapper extends BaseMapper<User> {
             "SELECT COUNT(*) FROM `user` u " +
             "<where>" + userSearchWhereSql + "</where>" +
             "</script>")
-    int countUserList(String userName, String minCreateTime, String maxCreateTime);
+    int countUserList(@Param("userName") String userName, @Param("minCreateTime") String minCreateTime,
+                      @Param("maxCreateTime") String maxCreateTime);
 
 }

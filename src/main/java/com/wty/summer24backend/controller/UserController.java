@@ -172,7 +172,12 @@ public class UserController {
         } else {
             orderMethod = "desc".equalsIgnoreCase(orderMethod) ? "desc" : "asc";
         }
-        return ResponseVO.success(userService.getUserList(userName, minCreateTime, maxCreateTime, orderBy, orderMethod, pageNum, pageSize));
+        // wty: 增加找不到时的处理
+        Page<User> pg = userService.getUserList(userName, minCreateTime, maxCreateTime, orderBy, orderMethod, pageNum, pageSize);
+        if (pg == null) {
+            return ResponseVO.error(StatusEnum.USER_NOT_FOUND);
+        }
+        return ResponseVO.success(pg);
     }
 
     /**
@@ -185,16 +190,25 @@ public class UserController {
     @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('" + PermissionCode.USER_MANAGE + "')")
     public ResponseVO<String> updateUserInfo(@RequestBody UserDTO userInfo) {
-        User user = userService.getById(userInfo.getId());
-        if (user == null) {
+        // wty: 更改了逻辑，改为查找用户名
+        //        User user = userService.getById(userInfo.getId());
+        List<Long> userIds = userService.findUserByName(userInfo.getUserName());
+        if (userIds.isEmpty()) {
             return ResponseVO.error(StatusEnum.USER_NOT_FOUND);
         }
-        userInfo.copyDataTo(user);
-        user.setUpdateTime(new Date());
-        userService.updateById(user);
-        if (userInfo.getRoleIds() != null) {
-            userRoleService.addUserRole(userInfo.getId(), userInfo.getRoleIds(), true);
-            ServletUtils.updatePermission(Collections.singletonList(userInfo.getId()));
+        for (Long userId : userIds) {
+            User user = userService.getById(userId);
+            userInfo.copyDataTo(user);
+            // wty: 重新设置id
+            user.setId(userId);
+            user.setUpdateTime(new Date());
+            if (!userService.updateById(user)) {
+                return ResponseVO.error(StatusEnum.USER_NOT_FOUND);
+            }
+            if (userInfo.getRoleIds() != null) {
+                userRoleService.addUserRole(userInfo.getId(), userInfo.getRoleIds(), true);
+                ServletUtils.updatePermission(Collections.singletonList(userInfo.getId()));
+            }
         }
         return ResponseVO.success("更新成功");
     }

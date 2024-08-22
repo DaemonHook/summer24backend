@@ -30,4 +30,6 @@ public interface UserService extends IService<User> {
 
     Map<String, Boolean> batchCheckUserName(List<String> userNames);
 
+    // by wty. 查找与name对应的id
+    List<Long> findUserByName(String userName);
 }
