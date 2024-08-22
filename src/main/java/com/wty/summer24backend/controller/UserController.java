@@ -172,12 +172,7 @@ public class UserController {
         } else {
             orderMethod = "desc".equalsIgnoreCase(orderMethod) ? "desc" : "asc";
         }
-        // wty: 增加找不到时的处理
-        Page<User> pg = userService.getUserList(userName, minCreateTime, maxCreateTime, orderBy, orderMethod, pageNum, pageSize);
-        if (pg == null) {
-            return ResponseVO.error(StatusEnum.USER_NOT_FOUND);
-        }
-        return ResponseVO.success(pg);
+        return ResponseVO.success(userService.getUserList(userName, minCreateTime, maxCreateTime, orderBy, orderMethod, pageNum, pageSize));
     }
 
     /**
