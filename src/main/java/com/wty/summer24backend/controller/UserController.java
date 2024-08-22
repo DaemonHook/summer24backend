@@ -200,46 +200,6 @@ public class UserController {
     }
 
     /**
-     * 更新用户头像
-     *
-     * @param id     用户id
-     * @param avatar 头像
-     */
-    @ApiOperation(value = "更新用户头像")
-    @PutMapping("/{id}/avatar")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_MANAGE + "')")
-    public ResponseVO<String> updateUserAvatar(@PathVariable long id,
-                                               @RequestPart MultipartFile avatar) {
-        User user = userService.getById(id);
-        if (user == null) {
-            return ResponseVO.error("用户不存在");
-        }
-        if (UserUtils.updateUserAvatar(user, avatar)) {
-            return ResponseVO.success("更新成功");
-        } else {
-            return ResponseVO.error("更新失败");
-        }
-    }
-
-    /**
-     * 获取用户头像
-     *
-     * @param id 用户id
-     */
-    @ApiOperation(value = "获取用户头像")
-    @GetMapping("/{id}/avatar")
-    @PreAuthorize("hasAuthority('" + PermissionCode.USER_MANAGE + "')")
-    public void getUserAvatar(@PathVariable long id, HttpServletResponse response) {
-        User user = userService.getById(id);
-        String avatarPath = StorageEnum.USER_AVATAR_PATH.getDesc() + user.getAvatarPath();
-        try {
-            FileUtils.writeImageToResponse(avatarPath, response);
-        } catch (IOException ignored) {
-            response.setStatus(CommonStatusEnum.NO_CONTENT.getCode());
-        }
-    }
-
-    /**
      * 删除用户
      *
      * @param ids 用户id列表

@@ -1,6 +1,5 @@
 package com.wty.summer24backend.util;
 
-import com.example.common.config.DevConfig;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -30,11 +29,7 @@ public class SwaggerUtils {
 
     private static List<ApiKey> securitySchemes() {
         List<ApiKey> apiKeyList = new ArrayList<>();
-        if (DevConfig.ENABLE_GATEWAY) {
-            apiKeyList.add(new ApiKey("login-user", "login-user", "header"));
-        } else {
-            apiKeyList.add(new ApiKey("Authorization", "Authorization", "header"));
-        }
+        apiKeyList.add(new ApiKey("Authorization", "Authorization", "header"));
         return apiKeyList;
     }
 

@@ -6,6 +6,7 @@ import com.wty.summer24backend.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,9 @@ public interface UserMapper extends BaseMapper<User> {
             "ORDER BY ${orderBy} ${orderMethod} " +
             "LIMIT #{start}, #{length}" +
             "</script>")
-    List<User> getUserList(String userName, String minCreateTime, String maxCreateTime, String orderBy, String orderMethod, Integer start, Integer length);
+    List<User> getUserList(@Param("userName") String userName, @Param("minCreateTime") String minCreateTime,
+                           @Param("maxCreateTime") String maxCreateTime, @Param("orderBy") String orderBy,
+                           @Param("orderMethod") String orderMethod, @Param("start") Integer start, @Param("length") Integer length);
 
     @Select("<script>" +
             "SELECT COUNT(*) FROM `user` u " +

@@ -45,19 +45,18 @@ public class AuthController {
      *
      * @param userName 用户名
      * @param password 密码
-     * @param platform 登录系统
      */
     @ApiOperation(value = "使用用户名密码登录", notes = "使用用户名密码登录")
     @ApiImplicitParam(paramType = "header", name = "X-Real-IP", value = "ip", required = true, dataType = "string")
     @PostMapping(value = "/login")
     public ResponseVO<Map<String, Object>> login(@RequestParam @ApiParam(value = "用户名", required = true) String userName,
-                                                 @RequestParam @ApiParam(value = "密码", required = true) String password,
-                                                 Integer platform) {
+                                                 @RequestParam @ApiParam(value = "密码", required = true) String password) {
+        System.out.println("login with " + userName + " " + password);
         User user = userService.getOne(new QueryWrapper<User>().eq("user_name", userName).ne("status", User.Status.DELETED));
         if (user == null) {
             return ResponseVO.error(StatusEnum.USER_NOT_FOUND);
         }
-        return UserUtils.handleUserLogin(user, password, platform);
+        return UserUtils.handleUserLogin(user, password);
     }
 
     /**

@@ -28,14 +28,11 @@ public class LoginLog implements Serializable {
     private String ip;
     // 登录时间
     private Date loginTime;
-    // 登录系统
-    private Integer platform;
 
-    public LoginLog(Long userId, String ip, Date loginTime, Integer platform) {
+    public LoginLog(Long userId, String ip, Date loginTime) {
         this.userId = userId;
         this.ip = ip;
         this.loginTime = loginTime;
-        this.platform = platform;
     }
 
 }

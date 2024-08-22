@@ -61,7 +61,7 @@ public class UserUtils {
      * @param roleAndPermissionInfo 用户角色和权限信息
      */
     public static void setUserRoleAndPermissionInfo(User user, List<Map<String, Object>> roleAndPermissionInfo) {
-        if (roleAndPermissionInfo != null && roleAndPermissionInfo.size() > 0) {
+        if (roleAndPermissionInfo != null && !roleAndPermissionInfo.isEmpty()) {
             Map<String, Object> tempInfo = roleAndPermissionInfo.get(0);
             user.setRoleList(Arrays.asList(((String) tempInfo.get("roleNameList")).split(",")));
             user.setPermissionList(Arrays.asList(((String) tempInfo.get("permissionCodeList")).split(",")));
@@ -99,9 +99,8 @@ public class UserUtils {
      *
      * @param user       用户
      * @param password   密码
-     * @param platformId 系统id
      */
-    public static ResponseVO<Map<String, Object>> handleUserLogin(User user, String password, Integer platformId) {
+    public static ResponseVO<Map<String, Object>> handleUserLogin(User user, String password) {
         if (!User.Status.ENABLE.equals(user.getStatus())) {
             return ResponseVO.error(StatusEnum.USER_DISABLED);
         }
@@ -112,11 +111,8 @@ public class UserUtils {
         setUserRoleAndPermissionInfo(user, roleAndPermissionInfo);
         String roleNameList = String.join(",", user.getRoleList());
         String permissionCodeList = String.join(",", user.getPermissionList());
-        if (!checkUserHasPermissionForPlatform(roleAndPermissionInfo, platformId)) {
-            return ResponseVO.error(StatusEnum.PERMISSION_DENIED_FOR_PLATFORM);
-        }
         String ip = ServletUtils.getRequest().getHeader("X-Real-IP");
-        instance.loginLogService.save(new LoginLog(user.getId(), ip, new Date(), platformId));
+        instance.loginLogService.save(new LoginLog(user.getId(), ip, new Date()));
         Map<String, Object> returnMap = new HashMap<>();
         returnMap.put("user", user);
         ServletUtils.setTokenData(user.getId(), user.getUserName(), roleNameList, permissionCodeList);

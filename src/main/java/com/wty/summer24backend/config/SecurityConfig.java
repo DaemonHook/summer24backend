@@ -10,8 +10,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,21 +30,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // 禁用csrf
+        http.csrf().disable();
+        // 禁用cors
+        http.cors().disable();
+
         if (DevConfig.ENABLE_SECURITY) {
             http
                     .authorizeRequests()
-                    .antMatchers("/swagger-ui.html/**",
+                    .antMatchers(
+                            "/swagger-ui.html/**",
                             "/webjars/**",
                             "/swagger-resources/**",
-                            "/doc.html").permitAll()
-                    .antMatchers("/auth/login",
-                            "/auth/register").permitAll() // 允许访问登录和注册页面
+                            "/doc.html",
+                            "/v2/**",
+                            "/doc.html/**",
+                            "/auth/**").permitAll() // 允许访问登录和注册页面
                     .anyRequest().authenticated() // 其他请求需要认证
                     .and().exceptionHandling()
-                    .authenticationEntryPoint((request, response, authenticationException) ->
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, CommonStatusEnum.UNAUTHORIZED.getMessage()))
-                    .accessDeniedHandler((request, response, accessDeniedException) ->
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN, CommonStatusEnum.FORBIDDEN.getMessage()));
+                    .authenticationEntryPoint((request, response, authenticationException) -> {
+                        System.err.println("request at " + request.getRequestURI() + " " + authenticationException.getMessage());
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, CommonStatusEnum.UNAUTHORIZED.getMessage());
+                    })
+                    .accessDeniedHandler((request, response, accessDeniedException) -> {
+                        System.err.println("request at " + request.getRequestURI() + " " + accessDeniedException.getMessage());
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN, CommonStatusEnum.FORBIDDEN.getMessage());
+                    });
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }
@@ -71,22 +80,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             }
             filterChain.doFilter(request, response);
         }
-    }
-
-    /**
-     * 检查权限
-     *
-     * @param needAuthority 需要的角色或权限
-     * @return 是否有权限
-     */
-    public static boolean checkAuthority(String needAuthority) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority grantedAuthority : authentication.getAuthorities()) {
-            if (needAuthority.trim().equals(grantedAuthority.getAuthority())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
